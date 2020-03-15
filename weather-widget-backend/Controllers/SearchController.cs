@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Cors;
+using weather_widget_backend.API.Kladr;
+using weather_widget_backend.API.Kladr.Models;
+using weather_widget_backend.Models.Search;
 
 namespace weather_widget_backend.Controllers
 {
@@ -13,18 +13,18 @@ namespace weather_widget_backend.Controllers
     [ApiController]
     public class SearchController : ControllerBase
     {
-        // GET: api/Search
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
         // GET: api/Search/searchString
-        [HttpGet("{searchString}", Name = "Get")]
+        [HttpGet("{searchString}")]
         public string Get(string searchString)
         {
-            return searchString;
+            Result[] cities = KladrAPI.GetCities(searchString, 5).result;
+            List<SearchItem> responseList = new List<SearchItem>();
+            for (int i = 0; i < cities.Length; i++)
+            {
+                responseList.Add(new SearchItem(cities[i].name));
+            }
+            responseList.Remove(responseList[0]);
+            return JsonConvert.SerializeObject(new SearchResponse(responseList.ToArray()));
         }
     }
 }
